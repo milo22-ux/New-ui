@@ -5,12 +5,16 @@ function Library:CreateWindow(title)
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = title or "UI_Library"
     ScreenGui.Parent = game:GetService("CoreGui")
+    ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    ScreenGui.ResetOnSpawn = false
 
     local MainFrame = Instance.new("Frame")
     MainFrame.Size = UDim2.new(0, 580, 0, 420)
     MainFrame.Position = UDim2.new(0.5, -290, 0.5, -210)
     MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    MainFrame.BackgroundTransparency = 0.15
     MainFrame.BorderSizePixel = 0
+    MainFrame.Active = true
     MainFrame.Parent = ScreenGui
     Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
 
@@ -19,7 +23,7 @@ function Library:CreateWindow(title)
     Shadow.Size = UDim2.new(1, 30, 1, 30)
     Shadow.Position = UDim2.new(0, -15, 0, -15)
     Shadow.Image = "rbxassetid://1316045217"
-    Shadow.ImageTransparency = 0.5
+    Shadow.ImageTransparency = 0.55
     Shadow.ScaleType = Enum.ScaleType.Slice
     Shadow.SliceCenter = Rect.new(10, 10, 118, 118)
     Shadow.BackgroundTransparency = 1
@@ -27,9 +31,10 @@ function Library:CreateWindow(title)
     local TopBar = Instance.new("Frame", MainFrame)
     TopBar.Size = UDim2.new(1, 0, 0, 35)
     TopBar.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    TopBar.BackgroundTransparency = 0.1
 
     local Title = Instance.new("TextLabel", TopBar)
-    Title.Size = UDim2.new(1, -10, 1, 0)
+    Title.Size = UDim2.new(1, -50, 1, 0)
     Title.Position = UDim2.new(0, 10, 0, 0)
     Title.BackgroundTransparency = 1
     Title.Text = title or "UI Library"
@@ -38,10 +43,22 @@ function Library:CreateWindow(title)
     Title.Font = Enum.Font.GothamBold
     Title.TextSize = 14
 
+    local Minimize = Instance.new("TextButton", TopBar)
+    Minimize.Size = UDim2.new(0, 35, 1, 0)
+    Minimize.Position = UDim2.new(1, -35, 0, 0)
+    Minimize.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    Minimize.BackgroundTransparency = 0.2
+    Minimize.Text = "-"
+    Minimize.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Minimize.Font = Enum.Font.GothamBold
+    Minimize.TextSize = 16
+    Instance.new("UICorner", Minimize).CornerRadius = UDim.new(0, 6)
+
     local TabButtons = Instance.new("Frame", MainFrame)
     TabButtons.Size = UDim2.new(1, 0, 0, 30)
     TabButtons.Position = UDim2.new(0, 0, 0, 35)
     TabButtons.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    TabButtons.BackgroundTransparency = 0.1
 
     local TabHolder = Instance.new("Frame", MainFrame)
     TabHolder.Size = UDim2.new(1, 0, 1, -65)
@@ -53,6 +70,50 @@ function Library:CreateWindow(title)
     TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
     TabLayout.Padding = UDim.new(0, 3)
 
+    -- Dragging support (PC + Mobile)
+    local UserInputService = game:GetService("UserInputService")
+    local dragging, dragInput, dragStart, startPos
+
+    local function update(input)
+        local delta = input.Position - dragStart
+        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+
+    TopBar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = MainFrame.Position
+
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+
+    TopBar.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            update(input)
+        end
+    end)
+
+    -- Minimize
+    local minimized = false
+    Minimize.MouseButton1Click:Connect(function()
+        minimized = not minimized
+        MainFrame.Size = minimized and UDim2.new(0, 200, 0, 35) or UDim2.new(0, 580, 0, 420)
+        TabButtons.Visible = not minimized
+        TabHolder.Visible = not minimized
+    end)
+
     function Library:CreateTab(tabName)
         local Tab = {}
         Tab.Name = tabName
@@ -60,6 +121,7 @@ function Library:CreateWindow(title)
         local Button = Instance.new("TextButton")
         Button.Size = UDim2.new(0, 100, 1, 0)
         Button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        Button.BackgroundTransparency = 0.2
         Button.Text = tabName
         Button.TextColor3 = Color3.fromRGB(255, 255, 255)
         Button.Font = Enum.Font.Gotham
@@ -88,6 +150,7 @@ function Library:CreateWindow(title)
             local Btn = Instance.new("TextButton", TabFrame)
             Btn.Size = UDim2.new(0, 240, 0, 32)
             Btn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+            Btn.BackgroundTransparency = 0.15
             Btn.Text = text
             Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
             Btn.Font = Enum.Font.Gotham
@@ -100,6 +163,7 @@ function Library:CreateWindow(title)
             local Btn = Instance.new("TextButton", TabFrame)
             Btn.Size = UDim2.new(0, 240, 0, 32)
             Btn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+            Btn.BackgroundTransparency = 0.15
             Btn.Text = text
             Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
             Btn.Font = Enum.Font.Gotham
@@ -141,17 +205,17 @@ function Library:CreateWindow(title)
             local dragging = false
 
             Back.InputBegan:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                     dragging = true
                 end
             end)
             UIS.InputEnded:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                     dragging = false
                 end
             end)
             UIS.InputChanged:Connect(function(input)
-                if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+                if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
                     local percent = math.clamp((input.Position.X - Back.AbsolutePosition.X) / Back.AbsoluteSize.X, 0, 1)
                     local value = math.floor(min + (max - min) * percent)
                     Fill.Size = UDim2.new(percent, 0, 1, 0)
@@ -165,6 +229,7 @@ function Library:CreateWindow(title)
             local Drop = Instance.new("TextButton", TabFrame)
             Drop.Size = UDim2.new(0, 240, 0, 32)
             Drop.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+            Drop.BackgroundTransparency = 0.15
             Drop.Text = text
             Drop.TextColor3 = Color3.fromRGB(255, 255, 255)
             Drop.Font = Enum.Font.Gotham
@@ -175,6 +240,7 @@ function Library:CreateWindow(title)
             Holder.Size = UDim2.new(0, 240, 0, 0)
             Holder.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
             Holder.Visible = false
+            Holder.ClipsDescendants = true
             Instance.new("UICorner", Holder).CornerRadius = UDim.new(0, 6)
             local Layout = Instance.new("UIListLayout", Holder)
             Layout.Padding = UDim.new(0, 2)
@@ -207,6 +273,7 @@ function Library:CreateWindow(title)
             local Box = Instance.new("TextBox", TabFrame)
             Box.Size = UDim2.new(0, 240, 0, 32)
             Box.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+            Box.BackgroundTransparency = 0.15
             Box.Text = ""
             Box.PlaceholderText = placeholder or "Enter text..."
             Box.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -222,6 +289,7 @@ function Library:CreateWindow(title)
             local Btn = Instance.new("TextButton", TabFrame)
             Btn.Size = UDim2.new(0, 240, 0, 32)
             Btn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            Btn.BackgroundTransparency = 0.1
             Btn.Text = text
             Btn.TextColor3 = Color3.fromRGB(0, 0, 0)
             Btn.Font = Enum.Font.Gotham
