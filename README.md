@@ -10,7 +10,7 @@ Toggles use a `#` prefix that lights up when activated. Everything is easy to us
 To begin, load the library:
 
 ```lua
-local VortrxLibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/yourname/repo/main/V✧RTX.lua"))()
+local VortrxLibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/milo22-ux/New-ui/refs/heads/main/Ui"))()
 ```
 
 Then create your UI:
