@@ -1,0 +1,243 @@
+local Library = {}
+Library.__index = Library
+
+function Library:CreateWindow(title)
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = title or "UI_Library"
+    ScreenGui.Parent = game:GetService("CoreGui")
+
+    local MainFrame = Instance.new("Frame")
+    MainFrame.Size = UDim2.new(0, 580, 0, 420)
+    MainFrame.Position = UDim2.new(0.5, -290, 0.5, -210)
+    MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    MainFrame.BorderSizePixel = 0
+    MainFrame.Parent = ScreenGui
+    Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
+
+    local Shadow = Instance.new("ImageLabel", MainFrame)
+    Shadow.ZIndex = 0
+    Shadow.Size = UDim2.new(1, 30, 1, 30)
+    Shadow.Position = UDim2.new(0, -15, 0, -15)
+    Shadow.Image = "rbxassetid://1316045217"
+    Shadow.ImageTransparency = 0.5
+    Shadow.ScaleType = Enum.ScaleType.Slice
+    Shadow.SliceCenter = Rect.new(10, 10, 118, 118)
+    Shadow.BackgroundTransparency = 1
+
+    local TopBar = Instance.new("Frame", MainFrame)
+    TopBar.Size = UDim2.new(1, 0, 0, 35)
+    TopBar.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+
+    local Title = Instance.new("TextLabel", TopBar)
+    Title.Size = UDim2.new(1, -10, 1, 0)
+    Title.Position = UDim2.new(0, 10, 0, 0)
+    Title.BackgroundTransparency = 1
+    Title.Text = title or "UI Library"
+    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Title.TextXAlignment = Enum.TextXAlignment.Left
+    Title.Font = Enum.Font.GothamBold
+    Title.TextSize = 14
+
+    local TabButtons = Instance.new("Frame", MainFrame)
+    TabButtons.Size = UDim2.new(1, 0, 0, 30)
+    TabButtons.Position = UDim2.new(0, 0, 0, 35)
+    TabButtons.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+
+    local TabHolder = Instance.new("Frame", MainFrame)
+    TabHolder.Size = UDim2.new(1, 0, 1, -65)
+    TabHolder.Position = UDim2.new(0, 0, 0, 65)
+    TabHolder.BackgroundTransparency = 1
+
+    local TabLayout = Instance.new("UIListLayout", TabButtons)
+    TabLayout.FillDirection = Enum.FillDirection.Horizontal
+    TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    TabLayout.Padding = UDim.new(0, 3)
+
+    function Library:CreateTab(tabName)
+        local Tab = {}
+        Tab.Name = tabName
+
+        local Button = Instance.new("TextButton")
+        Button.Size = UDim2.new(0, 100, 1, 0)
+        Button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        Button.Text = tabName
+        Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+        Button.Font = Enum.Font.Gotham
+        Button.TextSize = 13
+        Button.Parent = TabButtons
+        Instance.new("UICorner", Button).CornerRadius = UDim.new(0, 6)
+
+        local TabFrame = Instance.new("ScrollingFrame", TabHolder)
+        TabFrame.Size = UDim2.new(1, 0, 1, 0)
+        TabFrame.BackgroundTransparency = 1
+        TabFrame.Visible = false
+        TabFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+        local Layout = Instance.new("UIListLayout", TabFrame)
+        Layout.Padding = UDim.new(0, 6)
+
+        Button.MouseButton1Click:Connect(function()
+            for _, frame in ipairs(TabHolder:GetChildren()) do
+                if frame:IsA("ScrollingFrame") then
+                    frame.Visible = false
+                end
+            end
+            TabFrame.Visible = true
+        end)
+
+        function Tab:NewButton(text, callback)
+            local Btn = Instance.new("TextButton", TabFrame)
+            Btn.Size = UDim2.new(0, 240, 0, 32)
+            Btn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+            Btn.Text = text
+            Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+            Btn.Font = Enum.Font.Gotham
+            Btn.TextSize = 13
+            Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 6)
+            Btn.MouseButton1Click:Connect(function() if callback then callback() end end)
+        end
+
+        function Tab:NewToggle(text, callback)
+            local Btn = Instance.new("TextButton", TabFrame)
+            Btn.Size = UDim2.new(0, 240, 0, 32)
+            Btn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+            Btn.Text = text
+            Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+            Btn.Font = Enum.Font.Gotham
+            Btn.TextSize = 13
+            Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 6)
+            local toggled = false
+            Btn.MouseButton1Click:Connect(function()
+                toggled = not toggled
+                Btn.BackgroundColor3 = toggled and Color3.fromRGB(0, 200, 100) or Color3.fromRGB(0, 0, 0)
+                if callback then callback(toggled) end
+            end)
+        end
+
+        function Tab:NewSlider(text, min, max, default, callback)
+            local Frame = Instance.new("Frame", TabFrame)
+            Frame.Size = UDim2.new(0, 240, 0, 50)
+            Frame.BackgroundTransparency = 1
+
+            local Label = Instance.new("TextLabel", Frame)
+            Label.Size = UDim2.new(1, 0, 0, 20)
+            Label.BackgroundTransparency = 1
+            Label.Text = text .. ": " .. tostring(default)
+            Label.TextColor3 = Color3.fromRGB(255, 255, 255)
+            Label.Font = Enum.Font.Gotham
+            Label.TextSize = 12
+
+            local Back = Instance.new("Frame", Frame)
+            Back.Size = UDim2.new(1, 0, 0, 10)
+            Back.Position = UDim2.new(0, 0, 0, 30)
+            Back.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+            Instance.new("UICorner", Back).CornerRadius = UDim.new(0, 5)
+
+            local Fill = Instance.new("Frame", Back)
+            Fill.Size = UDim2.new((default - min) / (max - min), 0, 1, 0)
+            Fill.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
+            Instance.new("UICorner", Fill).CornerRadius = UDim.new(0, 5)
+
+            local UIS = game:GetService("UserInputService")
+            local dragging = false
+
+            Back.InputBegan:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    dragging = true
+                end
+            end)
+            UIS.InputEnded:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    dragging = false
+                end
+            end)
+            UIS.InputChanged:Connect(function(input)
+                if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+                    local percent = math.clamp((input.Position.X - Back.AbsolutePosition.X) / Back.AbsoluteSize.X, 0, 1)
+                    local value = math.floor(min + (max - min) * percent)
+                    Fill.Size = UDim2.new(percent, 0, 1, 0)
+                    Label.Text = text .. ": " .. value
+                    if callback then callback(value) end
+                end
+            end)
+        end
+
+        function Tab:NewDropdown(text, options, callback)
+            local Drop = Instance.new("TextButton", TabFrame)
+            Drop.Size = UDim2.new(0, 240, 0, 32)
+            Drop.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+            Drop.Text = text
+            Drop.TextColor3 = Color3.fromRGB(255, 255, 255)
+            Drop.Font = Enum.Font.Gotham
+            Drop.TextSize = 13
+            Instance.new("UICorner", Drop).CornerRadius = UDim.new(0, 6)
+
+            local Holder = Instance.new("Frame", TabFrame)
+            Holder.Size = UDim2.new(0, 240, 0, 0)
+            Holder.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+            Holder.Visible = false
+            Instance.new("UICorner", Holder).CornerRadius = UDim.new(0, 6)
+            local Layout = Instance.new("UIListLayout", Holder)
+            Layout.Padding = UDim.new(0, 2)
+
+            local Open = false
+            for _, opt in ipairs(options) do
+                local Btn = Instance.new("TextButton", Holder)
+                Btn.Size = UDim2.new(1, 0, 0, 25)
+                Btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+                Btn.Text = opt
+                Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+                Btn.Font = Enum.Font.Gotham
+                Btn.TextSize = 12
+                Btn.MouseButton1Click:Connect(function()
+                    Drop.Text = text .. ": " .. opt
+                    Holder.Visible = false
+                    Open = false
+                    if callback then callback(opt) end
+                end)
+            end
+
+            Drop.MouseButton1Click:Connect(function()
+                Open = not Open
+                Holder.Visible = Open
+                Holder.Size = UDim2.new(0, 240, 0, #options * 27)
+            end)
+        end
+
+        function Tab:NewTextBox(placeholder, callback)
+            local Box = Instance.new("TextBox", TabFrame)
+            Box.Size = UDim2.new(0, 240, 0, 32)
+            Box.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+            Box.Text = ""
+            Box.PlaceholderText = placeholder or "Enter text..."
+            Box.TextColor3 = Color3.fromRGB(255, 255, 255)
+            Box.Font = Enum.Font.Gotham
+            Box.TextSize = 13
+            Instance.new("UICorner", Box).CornerRadius = UDim.new(0, 6)
+            Box.FocusLost:Connect(function(enter)
+                if enter and callback then callback(Box.Text) end
+            end)
+        end
+
+        function Tab:NewColorPicker(text, callback)
+            local Btn = Instance.new("TextButton", TabFrame)
+            Btn.Size = UDim2.new(0, 240, 0, 32)
+            Btn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            Btn.Text = text
+            Btn.TextColor3 = Color3.fromRGB(0, 0, 0)
+            Btn.Font = Enum.Font.Gotham
+            Btn.TextSize = 13
+            Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 6)
+            Btn.MouseButton1Click:Connect(function()
+                local color = Color3.fromRGB(math.random(0,255), math.random(0,255), math.random(0,255))
+                Btn.BackgroundColor3 = color
+                if callback then callback(color) end
+            end)
+        end
+
+        return Tab
+    end
+
+    return Library
+end
+
+return Library
